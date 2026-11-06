@@ -1,6 +1,14 @@
+import Link from "next/link";
 import Logo from "./Logo";
 
-const links = ["Home", "Find an Apartment", "How It Works", "About Us", "FAQ", "Contact"];
+const links = [
+  { label: "Home", href: "/" },
+  { label: "Find an Apartment", href: "/dashboard" },
+  { label: "How It Works", href: "/#how" },
+  { label: "About Us", href: "/about" },
+  { label: "FAQ", href: "/faq" },
+  { label: "Contact", href: "/contact" },
+];
 const socials = ["f", "ig", "in"];
 
 export default function Footer() {
@@ -9,8 +17,10 @@ export default function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 lg:flex-row">
         <Logo light />
         <ul className="flex flex-wrap justify-center gap-6 text-xs">
-          {links.map((l) => (
-            <li key={l}><a href="#top" className="hover:text-[#67d36e]">{l}</a></li>
+          {links.map(({ label, href }) => (
+            <li key={label}>
+              <Link href={href} className="hover:text-[#67d36e]">{label}</Link>
+            </li>
           ))}
         </ul>
         <div className="flex items-center gap-3 text-xs">
@@ -24,7 +34,11 @@ export default function Footer() {
       </div>
       <div className="mx-auto mt-6 flex max-w-7xl flex-col items-center justify-between gap-2 border-t border-white/20 pt-4 text-[11px] text-white/80 sm:flex-row">
         <p>© {new Date().getFullYear()} RentBridge. All rights reserved.</p>
-        <p>Privacy Policy &nbsp;|&nbsp; Terms &amp; Conditions</p>
+        <p className="flex gap-2">
+          <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
+          <span aria-hidden>|</span>
+          <Link href="/terms" className="hover:text-white">Terms of Service</Link>
+        </p>
       </div>
     </footer>
   );

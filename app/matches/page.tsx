@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { listings, type Listing } from "@/data/listings";
+import type { Listing } from "@/data/listings";
+import ListingSetupNotice from "@/components/ListingSetupNotice";
+import { getListings, isSupabaseConfigured } from "@/lib/listings";
+
+export const dynamic = "force-dynamic";
 
 const budgetRanges: Record<string, { min: number; max: number }> = {
   "Under $1,000": { min: 0, max: 999 },
@@ -16,8 +20,6 @@ const bedroomCounts: Record<string, number> = {
   "3 Bedrooms": 3,
   "4+ Bedrooms": 4,
 };
-
-const cityOptions = Array.from(new Set(listings.map((l) => l.city))).sort();
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -41,32 +43,47 @@ const field =
 
 function ResultCard({ listing, zip }: { listing: Listing; zip: string }) {
   return (
-    <article className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={listing.image} alt={listing.title} className="h-52 w-full object-cover" />
-      <div className="p-5">
-        {zip && listing.zip === zip && (
-          <span className="mb-2 inline-block rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
-            In your ZIP code
+    <Link
+      href={`/rent/${listing.id}`}
+      className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+    >
+      <article>
+        <div className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={listing.image} alt={listing.title} className="h-52 w-full object-cover" />
+          {listing.images.length > 1 && (
+            <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
+              {listing.images.length} photos
+            </span>
+          )}
+        </div>
+        <div className="p-5">
+          {zip && listing.zip === zip && (
+            <span className="mb-2 inline-block rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+              In your ZIP code
+            </span>
+          )}
+          <h2 className="text-lg font-bold text-gray-900">{listing.title}</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            {listing.address}, {listing.city} {listing.zip}
+          </p>
+          <p className="mt-3 text-2xl font-bold text-[#1e5a3a]">
+            ${listing.price.toLocaleString()}
+            <span className="text-sm font-medium text-gray-600"> / month</span>
+          </p>
+          <p className="mt-2 text-sm text-gray-600">
+            {listing.beds === 0 ? "Studio" : `${listing.beds} bd`} · {listing.baths} ba ·{" "}
+            {listing.sqft.toLocaleString()} sqft
+          </p>
+          <p className="mt-2 text-sm text-gray-600">
+            {listing.petFriendly ? "Pet friendly" : "No pets"}
+          </p>
+          <span className="mt-4 inline-block text-sm font-semibold text-[#1e5a3a]">
+            View full details →
           </span>
-        )}
-        <h2 className="text-lg font-bold text-gray-900">{listing.title}</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          {listing.address}, {listing.city} {listing.zip}
-        </p>
-        <p className="mt-3 text-2xl font-bold text-[#1e5a3a]">
-          ${listing.price.toLocaleString()}
-          <span className="text-sm font-medium text-gray-600"> / month</span>
-        </p>
-        <p className="mt-2 text-sm text-gray-600">
-          {listing.beds === 0 ? "Studio" : `${listing.beds} bd`} · {listing.baths} ba ·{" "}
-          {listing.sqft.toLocaleString()} sqft
-        </p>
-        <p className="mt-2 text-sm text-gray-600">
-          {listing.petFriendly ? "Pet friendly" : "No pets"}
-        </p>
-      </div>
-    </article>
+        </div>
+      </article>
+    </Link>
   );
 }
 
@@ -76,14 +93,19 @@ export default async function MatchesPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
+  const listings = await getListings();
+  const cityOptions = Array.from(new Set(listings.map((l) => l.city))).sort();
 
   const city = param(params, "city");
   const zip = param(params, "zip");
   const budget = param(params, "budget");
   const bedrooms = param(params, "bedrooms");
   const moveIn = param(params, "moveIn");
-  const requestWasSent = param(params, "requestStatus") === "sent";
+  const requestStatus = param(params, "requestStatus");
+  const requestWasSent = requestStatus === "sent";
+  const emailNotConfigured = requestStatus === "email-not-configured";
   const cameFromForm = Boolean(zip && moveIn);
+  const supabaseConfigured = isSupabaseConfigured();
 
   const budgetRange = budgetRanges[budget];
   const minBeds = bedroomCounts[bedrooms];
@@ -136,9 +158,17 @@ export default async function MatchesPage({
           )}
         </header>
 
+        {!supabaseConfigured && <ListingSetupNotice />}
+
         {requestWasSent ? (
           <p role="status" className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
             Thanks! Your request was sent to our agent. They&apos;ll follow up about your preferences.
+          </p>
+        ) : emailNotConfigured ? (
+          <p role="alert" className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            Your apartment preferences are shown below, but the request email could not be sent.
+            The site administrator needs to configure RESEND_API_KEY, ADMIN_EMAIL, and
+            RESEND_FROM_EMAIL.
           </p>
         ) : cameFromForm ? (
           <p role="status" className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">

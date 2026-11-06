@@ -1,7 +1,3 @@
-import { Caveat } from "next/font/google";
-
-const caveat = Caveat({ subsets: ["latin"], weight: ["500", "700"] });
-
 export default function Handwritten({
   children,
   className = "",
@@ -9,5 +5,15 @@ export default function Handwritten({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <p className={`${caveat.className} ${className}`}>{children}</p>;
+  return (
+    <p
+      className={className}
+      style={{
+        fontFamily: '"Comic Sans MS", "Bradley Hand", "Segoe Print", cursive',
+        fontStyle: "italic",
+      }}
+    >
+      {children}
+    </p>
+  );
 }

@@ -48,7 +48,10 @@ export async function POST(request: Request) {
   if (!apiKey || !adminEmail || !fromEmail) {
     console.error("Apartment request email is not configured. Set RESEND_API_KEY, ADMIN_EMAIL, and RESEND_FROM_EMAIL.");
     return NextResponse.json(
-      { error: "Request submission is temporarily unavailable. Please try again later." },
+      {
+        code: "EMAIL_NOT_CONFIGURED",
+        error: "Request submission is not configured. Please contact the site administrator.",
+      },
       { status: 503 },
     );
   }
@@ -69,7 +72,7 @@ export async function POST(request: Request) {
   const emailResponse = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: "Bearer " + apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({

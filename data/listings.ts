@@ -9,6 +9,7 @@ export type Listing = {
   baths: number;
   sqft: number;
   image: string;
+  images: string[];
   petFriendly: boolean;
 };
 
@@ -24,6 +25,7 @@ function listing(
   sqft: number,
   petFriendly: boolean,
 ): Listing {
+  const image = `https://picsum.photos/seed/rentbridge${id}/800/600`;
   return {
     id,
     title,
@@ -35,7 +37,8 @@ function listing(
     baths,
     sqft,
     petFriendly,
-    image: `https://picsum.photos/seed/rentbridge${id}/800/600`,
+    image,
+    images: [image],
   };
 }
 

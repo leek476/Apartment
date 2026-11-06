@@ -42,7 +42,19 @@ export default function RequestForm() {
         body: JSON.stringify(request),
       });
 
-      search.set("requestStatus", response.ok ? "sent" : "not-sent");
+      if (response.ok) {
+        search.set("requestStatus", "sent");
+      } else {
+        const result: unknown = await response.json().catch(() => null);
+        const code =
+          result && typeof result === "object" && "code" in result
+            ? result.code
+            : undefined;
+        search.set(
+          "requestStatus",
+          code === "EMAIL_NOT_CONFIGURED" ? "email-not-configured" : "not-sent",
+        );
+      }
     } catch {
       search.set("requestStatus", "not-sent");
     } finally {

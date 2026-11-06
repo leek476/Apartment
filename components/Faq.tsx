@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const faqs = [
   { q: "Is there a fee for your service?", a: "No. Our service is completely free to you." },
@@ -31,12 +32,12 @@ export default function Faq() {
           </li>
         ))}
       </ul>
-      <a
-        href="#faq"
+      <Link
+        href="/faq"
         className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[#1e5a3a] px-5 py-2 text-sm font-semibold text-[#1e5a3a]"
       >
-        View All FAQs <ArrowRight size={16} />
-      </a>
+        View FAQ Page <ArrowRight size={16} />
+      </Link>
     </div>
   );
 }
