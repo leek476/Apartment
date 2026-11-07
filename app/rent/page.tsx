@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ApartmentRating from "@/components/ApartmentRating";
 import ListingSetupNotice from "@/components/ListingSetupNotice";
 import { getListings, isSupabaseConfigured } from "@/lib/listings";
 
@@ -45,6 +46,7 @@ export default async function RentPage() {
               </div>
               <div className="p-5">
                 <h2 className="mb-2 text-xl font-semibold text-gray-900">{listing.title}</h2>
+                <ApartmentRating rating={listing.adminRating} />
                 <p className="text-gray-600">{listing.address}, {listing.city} {listing.zip}</p>
                 <p className="mt-3 text-2xl font-bold text-teal-700">${listing.price.toLocaleString()}/mo</p>
                 <p className="mt-4 text-sm text-gray-600">
@@ -62,6 +64,14 @@ export default async function RentPage() {
           </Link>
         ))}
       </div>
+      {listings.length === 0 && supabaseConfigured && (
+        <section className="mt-8 rounded-xl border border-gray-200 bg-white p-8 text-center">
+          <h2 className="text-lg font-bold text-gray-900">No apartments have been published yet</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Check back soon. New apartments will appear here after an admin publishes them.
+          </p>
+        </section>
+      )}
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ApartmentRating from "@/components/ApartmentRating";
 import ListingGallery from "@/components/ListingGallery";
 import ListingSetupNotice from "@/components/ListingSetupNotice";
 import { getListingById, isSupabaseConfigured } from "@/lib/listings";
@@ -66,6 +67,14 @@ export default async function ListingDetailsPage({
                 </dd>
               </div>
             </dl>
+            {listing.adminRating > 0 && (
+              <section className="mt-6 border-t border-gray-100 pt-5">
+                <h2 className="text-sm font-semibold text-gray-900">RentBridge rating</h2>
+                <div className="mt-2">
+                  <ApartmentRating rating={listing.adminRating} size={20} />
+                </div>
+              </section>
+            )}
           </section>
         </div>
       </div>

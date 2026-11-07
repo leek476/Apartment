@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { Listing } from "@/data/listings";
+import ApartmentRating from "@/components/ApartmentRating";
 
 type ListingCardProps = {
   listing: Listing;
@@ -21,6 +22,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">{listing.title}</h3>
+            <ApartmentRating rating={listing.adminRating} />
             <p className="text-sm text-gray-600">{listing.address}</p>
             <p className="text-sm text-gray-500">{listing.city}</p>
           </div>

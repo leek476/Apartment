@@ -13,6 +13,7 @@ type ListingRow = {
   images: string[];
   image_paths: string[];
   pet_friendly: boolean;
+  admin_rating: number;
   created_at: string;
 };
 

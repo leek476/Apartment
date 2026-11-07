@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ApartmentRating from "@/components/ApartmentRating";
 import ListingSetupNotice from "@/components/ListingSetupNotice";
 import { getListings, isSupabaseConfigured } from "@/lib/listings";
 
@@ -127,6 +128,9 @@ export default async function DashboardPage({
                   </div>
                   <div className="p-5">
                     <h2 className="text-lg font-bold text-gray-900">{l.title}</h2>
+                    <div className="mt-2">
+                      <ApartmentRating rating={l.adminRating} />
+                    </div>
                     <p className="mt-1 text-sm text-gray-600">
                       {l.address}, {l.city} {l.zip}
                     </p>

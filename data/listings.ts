@@ -11,6 +11,7 @@ export type Listing = {
   image: string;
   images: string[];
   petFriendly: boolean;
+  adminRating: number;
 };
 
 function listing(
@@ -39,6 +40,7 @@ function listing(
     petFriendly,
     image,
     images: [image],
+    adminRating: 0,
   };
 }
 

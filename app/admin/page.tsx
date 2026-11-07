@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { Star } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 
 type Row = {
@@ -14,6 +15,7 @@ type Row = {
   image_path: string | null;
   images: string[] | null;
   image_paths: string[] | null;
+  admin_rating: number;
 };
 
 const field =
@@ -32,6 +34,7 @@ const emptyForm = {
   baths: "1",
   sqft: "",
   petFriendly: false,
+  adminRating: 5,
 };
 
 export default function AdminPage() {
@@ -48,6 +51,9 @@ export default function AdminPage() {
   const [fileKey, setFileKey] = useState(0);
   const [saving, setSaving] = useState(false);
   const [addingPhotosId, setAddingPhotosId] = useState<string | null>(null);
+  const [savingRatingId, setSavingRatingId] = useState<string | null>(null);
+  const [ratingDrafts, setRatingDrafts] = useState<Record<string, number>>({});
+  const [ratingColumnAvailable, setRatingColumnAvailable] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);
 
   const loadRows = useCallback(async () => {
@@ -58,10 +64,24 @@ export default function AdminPage() {
 
     const { data, error } = await client
       .from("listings")
-      .select("id,title,city,price,image,image_path,images,image_paths")
+      .select("id,title,city,price,image,image_path,images,image_paths,admin_rating")
       .order("created_at", { ascending: false });
 
-    if (error) throw new Error(`Could not load listings: ${error.message}`);
+    if (error) {
+      if (error.message.includes("admin_rating")) {
+        const { data: legacyData, error: legacyError } = await client
+          .from("listings")
+          .select("id,title,city,price,image,image_path,images,image_paths")
+          .order("created_at", { ascending: false });
+
+        if (legacyError) throw new Error(`Could not load listings: ${legacyError.message}`);
+        setRows((legacyData ?? []).map((row) => ({ ...row, admin_rating: 5 })));
+        setRatingColumnAvailable(false);
+        return;
+      }
+      throw new Error(`Could not load listings: ${error.message}`);
+    }
+    setRatingColumnAvailable(true);
     setRows(data ?? []);
   }, []);
 
@@ -151,6 +171,16 @@ export default function AdminPage() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMessage("");
+    if (!ratingColumnAvailable) {
+      setMessage("Run the admin_rating SQL migration shown above before publishing listings with a star rating.");
+      setMessageType("error");
+      return;
+    }
+    if (!Number.isInteger(form.adminRating) || form.adminRating < 1 || form.adminRating > 5) {
+      setMessage("Choose a star rating from 1 to 5.");
+      setMessageType("error");
+      return;
+    }
     if (files.length === 0) {
       setMessage("Please choose at least one photo.");
       setMessageType("error");
@@ -205,6 +235,7 @@ export default function AdminPage() {
         images: imageUrls,
         image_paths: uploadedPaths,
         pet_friendly: form.petFriendly,
+        admin_rating: form.adminRating,
       });
 
       if (insertError) throw new Error(`Could not save listing: ${insertError.message}`);
@@ -249,6 +280,7 @@ export default function AdminPage() {
       setMessageType("error");
       return;
     }
+
     if (selectedFiles.some((file) => file.size > maxImageSize)) {
       setMessage("Each photo must be 8 MB or smaller.");
       setMessageType("error");
@@ -315,6 +347,44 @@ export default function AdminPage() {
       setMessageType("error");
     } finally {
       setAddingPhotosId(null);
+    }
+  }
+
+  async function handleSaveRating(id: string) {
+    if (!ratingColumnAvailable) {
+      setMessage("Run the admin_rating SQL migration shown above before saving star ratings.");
+      setMessageType("error");
+      return;
+    }
+    const rating = ratingDrafts[id] ?? rows.find((listing) => listing.id === id)?.admin_rating ?? 0;
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      setMessage("Choose a star rating from 1 to 5.");
+      setMessageType("error");
+      return;
+    }
+    if (!supabase) {
+      setMessage("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      setMessageType("error");
+      return;
+    }
+
+    setSavingRatingId(id);
+    setMessage("");
+    try {
+      const { error } = await supabase.from("listings").update({ admin_rating: rating }).eq("id", id);
+      if (error) throw new Error(`Could not save apartment rating: ${error.message}`);
+
+      setRows((current) =>
+        current.map((listing) => (listing.id === id ? { ...listing, admin_rating: rating } : listing)),
+      );
+      setRatingDrafts((current) => ({ ...current, [id]: rating }));
+      setMessage("Apartment rating saved.");
+      setMessageType("success");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not save apartment rating.");
+      setMessageType("error");
+    } finally {
+      setSavingRatingId(null);
     }
   }
 
@@ -432,6 +502,28 @@ export default function AdminPage() {
             Sign out
           </button>
         </div>
+
+        {!ratingColumnAvailable && (
+          <section
+            role="alert"
+            className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+          >
+            <h2 className="font-semibold">Finish the star-rating database setup</h2>
+            <p className="mt-1">
+              Listings can be viewed, but rating changes and new listings cannot be saved until the
+              rating column is added in Supabase SQL Editor.
+            </p>
+            <pre className="mt-3 overflow-x-auto rounded bg-white p-3 text-xs">
+              <code>
+                {`alter table public.listings
+  add column if not exists admin_rating smallint not null default 5
+  check (admin_rating between 1 and 5);
+notify pgrst, 'reload schema';`}
+              </code>
+            </pre>
+            <p className="mt-2">After running it, refresh this page.</p>
+          </section>
+        )}
 
         <form
           onSubmit={handleSubmit}
@@ -580,8 +672,38 @@ export default function AdminPage() {
           </label>
 
           <div className="sm:col-span-2">
+            <span className={label}>Apartment rating</span>
+            <div className="flex items-center gap-1" role="radiogroup" aria-label="Apartment rating">
+              {Array.from({ length: 5 }, (_, index) => {
+                const rating = index + 1;
+                return (
+                  <button
+                    key={rating}
+                    type="button"
+                    role="radio"
+                    aria-checked={form.adminRating === rating}
+                    aria-label={`${rating} ${rating === 1 ? "star" : "stars"}`}
+                    onClick={() => update("adminRating", rating)}
+                    className="rounded p-1 text-amber-500 hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-[#1e5a3a]"
+                  >
+                    <Star
+                      size={24}
+                      fill={rating <= form.adminRating ? "currentColor" : "none"}
+                      aria-hidden="true"
+                    />
+                  </button>
+                );
+              })}
+              <span className="ml-2 text-sm text-gray-600">{form.adminRating} out of 5</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Set the rating renters will see for this apartment.
+            </p>
+          </div>
+
+          <div className="sm:col-span-2">
             <button
-              disabled={saving}
+              disabled={saving || !ratingColumnAvailable}
               className="rounded-lg bg-[#1e5a3a] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#164a2e] disabled:opacity-60"
             >
               {saving ? "Publishing…" : "Publish listing"}
@@ -603,41 +725,85 @@ export default function AdminPage() {
         <ul className="mt-3 divide-y divide-gray-200 rounded-xl bg-white shadow-sm">
           {rows.length === 0 && <li className="p-4 text-sm text-gray-600">No listings yet.</li>}
           {rows.map((r) => (
-            <li key={r.id} className="flex items-center gap-4 p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={r.image} alt="" className="h-14 w-20 rounded object-cover" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-gray-900">{r.title}</p>
-                <p className="text-xs text-gray-600">
-                  {r.city} · ${r.price.toLocaleString()}/mo
-                </p>
+            <li key={r.id} className="space-y-4 p-4">
+              <div className="flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={r.image} alt="" className="h-14 w-20 rounded object-cover" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-900">{r.title}</p>
+                  <p className="text-xs text-gray-600">
+                    {r.city} · ${r.price.toLocaleString()}/mo
+                  </p>
+                </div>
+                <label
+                  htmlFor={`more-photos-${r.id}`}
+                  className={`cursor-pointer text-sm font-semibold text-[#1e5a3a] hover:underline ${
+                    addingPhotosId === r.id ? "pointer-events-none opacity-50" : ""
+                  }`}
+                >
+                  {addingPhotosId === r.id ? "Uploading…" : "Add photos"}
+                </label>
+                <input
+                  id={`more-photos-${r.id}`}
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={addingPhotosId === r.id}
+                  onChange={(e) => {
+                    void handleAddPhotos(r.id, Array.from(e.target.files ?? []));
+                    e.currentTarget.value = "";
+                  }}
+                  className="sr-only"
+                />
+                <button
+                  onClick={() => handleDelete(r.id)}
+                  className="text-sm font-semibold text-red-700 hover:underline"
+                >
+                  Delete
+                </button>
               </div>
-              <label
-                htmlFor={`more-photos-${r.id}`}
-                className={`cursor-pointer text-sm font-semibold text-[#1e5a3a] hover:underline ${
-                  addingPhotosId === r.id ? "pointer-events-none opacity-50" : ""
-                }`}
-              >
-                {addingPhotosId === r.id ? "Uploading…" : "Add photos"}
-              </label>
-              <input
-                id={`more-photos-${r.id}`}
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp"
-                disabled={addingPhotosId === r.id}
-                onChange={(e) => {
-                  void handleAddPhotos(r.id, Array.from(e.target.files ?? []));
-                  e.currentTarget.value = "";
-                }}
-                className="sr-only"
-              />
-              <button
-                onClick={() => handleDelete(r.id)}
-                className="text-sm font-semibold text-red-700 hover:underline"
-              >
-                Delete
-              </button>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <span className={label}>Apartment rating</span>
+                <div
+                  className="flex items-center gap-1"
+                  role="radiogroup"
+                  aria-label={`Rating for ${r.title}`}
+                >
+                  {Array.from({ length: 5 }, (_, index) => {
+                    const rating = index + 1;
+                    const currentRating = ratingDrafts[r.id] ?? r.admin_rating;
+                    return (
+                      <button
+                        key={rating}
+                        type="button"
+                        role="radio"
+                        aria-checked={currentRating === rating}
+                        aria-label={`${rating} ${rating === 1 ? "star" : "stars"}`}
+                        disabled={!ratingColumnAvailable}
+                        onClick={() =>
+                          setRatingDrafts((current) => ({ ...current, [r.id]: rating }))
+                        }
+                        className="rounded p-1 text-amber-500 hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-[#1e5a3a] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Star
+                          size={22}
+                          fill={rating <= currentRating ? "currentColor" : "none"}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  disabled={savingRatingId === r.id || !ratingColumnAvailable}
+                  onClick={() => void handleSaveRating(r.id)}
+                  className="rounded-lg bg-[#1e5a3a] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#164a2e] disabled:opacity-60"
+                >
+                  {savingRatingId === r.id ? "Saving…" : "Save rating"}
+                </button>
+              </div>
             </li>
           ))}
         </ul>

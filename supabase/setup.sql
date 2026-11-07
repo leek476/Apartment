@@ -13,12 +13,17 @@ create table if not exists public.listings (
   images text[] not null default '{}',
   image_paths text[] not null default '{}',
   pet_friendly boolean not null default false,
+  admin_rating smallint not null default 5 check (admin_rating between 1 and 5),
   created_at timestamptz not null default now()
 );
 
 alter table public.listings add column if not exists image_path text;
 alter table public.listings add column if not exists images text[] not null default '{}';
 alter table public.listings add column if not exists image_paths text[] not null default '{}';
+alter table public.listings
+  add column if not exists admin_rating smallint not null default 5
+  check (admin_rating between 1 and 5);
+notify pgrst, 'reload schema';
 update public.listings
 set images = array[image]
 where cardinality(images) = 0;

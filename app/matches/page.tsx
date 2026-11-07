@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Listing } from "@/data/listings";
+import ApartmentRating from "@/components/ApartmentRating";
 import ListingSetupNotice from "@/components/ListingSetupNotice";
 import { getListings, isSupabaseConfigured } from "@/lib/listings";
 
@@ -64,6 +65,9 @@ function ResultCard({ listing, zip }: { listing: Listing; zip: string }) {
             </span>
           )}
           <h2 className="text-lg font-bold text-gray-900">{listing.title}</h2>
+          <div className="mt-2">
+            <ApartmentRating rating={listing.adminRating} />
+          </div>
           <p className="mt-1 text-sm text-gray-600">
             {listing.address}, {listing.city} {listing.zip}
           </p>
@@ -230,7 +234,14 @@ export default async function MatchesPage({
         )}
 
         {/* No exact match: show alternatives */}
-        {hasFilters && matches.length === 0 && (
+        {listings.length === 0 ? (
+          <section className="mt-8 rounded-xl border border-gray-200 bg-white p-8 text-center">
+            <h2 className="text-lg font-bold text-gray-900">No apartments have been published yet</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Check back soon. Apartments will appear here when an admin publishes them.
+            </p>
+          </section>
+        ) : hasFilters && matches.length === 0 && (
           <>
             <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6">
               <h2 className="text-xl font-bold text-gray-900">No apartments match all your filters</h2>
