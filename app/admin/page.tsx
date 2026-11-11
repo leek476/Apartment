@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { Star } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { ApartmentRequestRow } from "@/lib/database.types";
 
@@ -58,6 +58,8 @@ export default function AdminPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [requests, setRequests] = useState<ApartmentRequestRow[]>([]);
   const [requestError, setRequestError] = useState("");
+  const [requestActionError, setRequestActionError] = useState("");
+  const [deletingRequestId, setDeletingRequestId] = useState<string | null>(null);
 
   const loadRows = useCallback(async () => {
     const client = getSupabaseClient();
@@ -441,6 +443,36 @@ export default function AdminPage() {
     }
   }
 
+  async function handleDeleteRequest(request: ApartmentRequestRow) {
+    if (!confirm(`Delete the apartment search request from ${request.name}?`)) return;
+    if (!supabase) {
+      setRequestActionError("Supabase is not configured. This request could not be deleted.");
+      return;
+    }
+
+    setDeletingRequestId(request.id);
+    setRequestActionError("");
+    try {
+      const { data, error } = await supabase
+        .from("apartment_requests")
+        .delete()
+        .eq("id", request.id)
+        .select("id")
+        .maybeSingle();
+
+      if (error) throw new Error(`Could not delete apartment request: ${error.message}`);
+      if (!data) throw new Error("This request was not deleted. It may already have been removed.");
+
+      setRequests((current) => current.filter((item) => item.id !== request.id));
+    } catch (error) {
+      setRequestActionError(
+        error instanceof Error ? error.message : "Could not delete apartment request.",
+      );
+    } finally {
+      setDeletingRequestId(null);
+    }
+  }
+
   async function handleSignOut() {
     if (!supabase) return;
     try {
@@ -751,38 +783,55 @@ notify pgrst, 'reload schema';`}
               {requestError}
             </p>
           ) : (
-            <ul className="mt-3 divide-y divide-gray-200 rounded-xl bg-white shadow-sm">
-              {requests.length === 0 && (
-                <li className="p-4 text-sm text-gray-600">No apartment requests yet.</li>
+            <>
+              {requestActionError && (
+                <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                  {requestActionError}
+                </p>
               )}
-              {requests.map((request) => (
-                <li key={request.id} className="space-y-2 p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-gray-900">{request.name}</p>
-                      <p className="text-xs text-gray-500">
-                        Submitted {new Date(request.created_at).toLocaleString()}
-                      </p>
+              <ul className="mt-3 divide-y divide-gray-200 rounded-xl bg-white shadow-sm">
+                {requests.length === 0 && (
+                  <li className="p-4 text-sm text-gray-600">No apartment requests yet.</li>
+                )}
+                {requests.map((request) => (
+                  <li key={request.id} className="space-y-2 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-gray-900">{request.name}</p>
+                        <p className="text-xs text-gray-500">
+                          Submitted {new Date(request.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm font-semibold">
+                        <a className="text-[#1e5a3a] hover:underline" href={`mailto:${request.email}`}>
+                          Email
+                        </a>
+                        <a className="text-[#1e5a3a] hover:underline" href={`tel:${request.phone}`}>
+                          Call
+                        </a>
+                        <button
+                          type="button"
+                          aria-label={`Delete request from ${request.name}`}
+                          disabled={deletingRequestId === request.id}
+                          onClick={() => void handleDeleteRequest(request)}
+                          className="inline-flex items-center gap-1 text-red-700 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Trash2 size={16} aria-hidden="true" />
+                          {deletingRequestId === request.id ? "Deleting…" : "Delete"}
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex gap-3 text-sm font-semibold text-[#1e5a3a]">
-                      <a className="hover:underline" href={`mailto:${request.email}`}>
-                        Email
-                      </a>
-                      <a className="hover:underline" href={`tel:${request.phone}`}>
-                        Call
-                      </a>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700">
-                    {request.email} · {request.phone}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {request.city} {request.zip} · {request.bedrooms} · {request.budget}/mo ·
-                    {" "}Move-in {request.move_in}
-                  </p>
-                </li>
-              ))}
-            </ul>
+                    <p className="text-sm text-gray-700">
+                      {request.email} · {request.phone}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {request.city} {request.zip} · {request.bedrooms} · {request.budget}/mo ·
+                      {" "}Move-in {request.move_in}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </section>
 

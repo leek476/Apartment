@@ -49,9 +49,12 @@ create table if not exists public.apartment_requests (
 alter table public.apartment_requests enable row level security;
 grant insert on public.apartment_requests to anon, authenticated;
 grant select on public.apartment_requests to authenticated;
+grant delete on public.apartment_requests to authenticated;
 
 drop policy if exists "RentBridge visitors can submit apartment requests" on public.apartment_requests;
 drop policy if exists "RentBridge admins can read apartment requests" on public.apartment_requests;
+drop policy if exists "RentBridge admins can delete apartment requests" on public.apartment_requests;
+drop policy if exists "RentBridge only admins can delete apartment requests" on public.apartment_requests;
 
 create policy "RentBridge visitors can submit apartment requests"
   on public.apartment_requests for insert
@@ -60,6 +63,16 @@ create policy "RentBridge visitors can submit apartment requests"
 
 create policy "RentBridge admins can read apartment requests"
   on public.apartment_requests for select
+  to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+create policy "RentBridge admins can delete apartment requests"
+  on public.apartment_requests for delete
+  to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+create policy "RentBridge only admins can delete apartment requests"
+  on public.apartment_requests as restrictive for delete
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
