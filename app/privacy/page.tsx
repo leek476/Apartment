@@ -12,7 +12,7 @@ const sections = [
   },
   {
     title: "Service providers",
-    text: "We use third-party services to operate the site and process communications, including Supabase for listing data and Resend for request emails. Those providers process information as needed to provide their services under their own terms and privacy practices.",
+    text: "We use third-party services to operate the site and process communications, including Supabase to store apartment search requests and listing data, and Resend to email request notifications to our team. Those providers process information as needed to provide their services under their own terms and privacy practices.",
   },
   {
     title: "Choices and questions",

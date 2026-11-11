@@ -32,6 +32,39 @@ set image_paths = array[image_path]
 where cardinality(image_paths) = 0 and image_path is not null;
 alter table public.listings enable row level security;
 
+create table if not exists public.apartment_requests (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (char_length(name) between 1 and 100),
+  email text not null check (char_length(email) between 3 and 254),
+  phone text not null check (char_length(phone) between 7 and 30),
+  city text not null,
+  zip text not null check (zip ~ '^[0-9]{5}(-[0-9]{4})?$'),
+  budget text not null,
+  bedrooms text not null,
+  move_in date not null,
+  consent boolean not null check (consent),
+  created_at timestamptz not null default now()
+);
+
+alter table public.apartment_requests enable row level security;
+grant insert on public.apartment_requests to anon, authenticated;
+grant select on public.apartment_requests to authenticated;
+
+drop policy if exists "RentBridge visitors can submit apartment requests" on public.apartment_requests;
+drop policy if exists "RentBridge admins can read apartment requests" on public.apartment_requests;
+
+create policy "RentBridge visitors can submit apartment requests"
+  on public.apartment_requests for insert
+  to anon, authenticated
+  with check (true);
+
+create policy "RentBridge admins can read apartment requests"
+  on public.apartment_requests for select
+  to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+notify pgrst, 'reload schema';
+
 grant select on public.listings to anon, authenticated;
 grant insert, update, delete on public.listings to authenticated;
 

@@ -3,30 +3,33 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function SearchBar() {
-  const [query, setQuery] = useState("");
+export default function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const router = useRouter();
 
-  function handleSearch() {
-    router.push(`/rent?q=${encodeURIComponent(query)}`);
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedQuery = query.trim();
+    router.push(trimmedQuery ? `/rent?q=${encodeURIComponent(trimmedQuery)}` : "/rent");
   }
 
   return (
-    <div className="flex w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-lg">
+    <form
+      onSubmit={handleSearch}
+      role="search"
+      className="flex w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-lg"
+    >
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        placeholder="Enter a city, neighborhood, or ZIP code"
-        className="flex-1 px-5 py-4 text-gray-900 outline-none"
+        placeholder="Enter a city, street address, or ZIP code"
+        aria-label="Search apartments by city, street address, or ZIP code"
+        className="min-w-0 flex-1 px-4 py-3 text-gray-900 outline-none focus:ring-2 focus:ring-inset focus:ring-[#1e5a3a] sm:px-5 sm:py-4"
       />
-      <button
-        onClick={handleSearch}
-        className="bg-teal-700 px-8 font-semibold text-white hover:bg-teal-800"
-      >
+      <button className="shrink-0 bg-teal-700 px-5 font-semibold text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white sm:px-8">
         Search
       </button>
-    </div>
+    </form>
   );
 }

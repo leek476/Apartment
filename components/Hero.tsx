@@ -15,10 +15,10 @@ export default function Hero() {
       style={{ backgroundImage: "url('/images/hero.webp')" }}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-[#0d2416]/90 via-[#0d2416]/60 to-transparent" />
-      <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-16 pt-28 lg:grid-cols-[1.1fr_1fr] lg:pb-20 lg:pt-32">
+      <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 pb-12 pt-12 sm:gap-10 sm:px-6 sm:pb-16 sm:pt-16 lg:grid-cols-[1.1fr_1fr] lg:pb-20 lg:pt-20">
         <div className="text-white">
-          <p className="text-xs font-semibold tracking-[0.2em]">APARTMENT SEARCH ASSISTANCE</p>
-          <h1 className="mt-4 text-5xl font-extrabold leading-tight md:text-6xl">
+          <p className="text-[11px] font-semibold tracking-[0.16em] sm:text-xs sm:tracking-[0.2em]">APARTMENT SEARCH ASSISTANCE</p>
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl md:text-6xl">
             A better way to find your <span className="text-[#67d36e]">next apartment.</span>
           </h1>
           <p className="mt-6 max-w-md text-base text-white/90">

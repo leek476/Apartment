@@ -28,6 +28,20 @@ type ListingInsert = Omit<
   image_paths?: string[];
 };
 
+export type ApartmentRequestRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  zip: string;
+  budget: string;
+  bedrooms: string;
+  move_in: string;
+  consent: boolean;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -35,6 +49,15 @@ export type Database = {
         Row: ListingRow;
         Insert: ListingInsert;
         Update: Partial<ListingInsert>;
+        Relationships: [];
+      };
+      apartment_requests: {
+        Row: ApartmentRequestRow;
+        Insert: Omit<ApartmentRequestRow, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: never;
         Relationships: [];
       };
     };

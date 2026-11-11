@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSupabaseClient } from "@/lib/supabase";
 
 const cities = [
   "Oklahoma City, OK", "Tulsa, OK", "Norman, OK", "Edmond, OK", "Lawton, OK",
@@ -41,6 +42,51 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please check your details and try again." }, { status: 400 });
   }
 
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    console.error("Apartment request database is not configured.");
+    return NextResponse.json(
+      { code: "DATABASE_NOT_CONFIGURED", error: "Request submission is not configured." },
+      { status: 503 },
+    );
+  }
+
+  const normalizedRequest = {
+    name: name.trim(),
+    email: email.trim(),
+    phone: phone.trim(),
+    city,
+    zip,
+    budget,
+    bedrooms,
+    move_in: moveIn,
+    consent: true,
+  };
+  const { error: insertError } = await supabase
+    .from("apartment_requests")
+    .insert(normalizedRequest);
+
+  if (insertError) {
+    if (insertError.code === "PGRST205" || insertError.code === "42P01") {
+      console.error("Could not save apartment request: the apartment_requests table is missing.");
+      return NextResponse.json(
+        {
+          code: "REQUEST_TABLE_NOT_CONFIGURED",
+          error: "Request storage is not set up yet. Please contact the site administrator.",
+        },
+        { status: 503 },
+      );
+    }
+
+    console.error(
+      `Could not save apartment request (${insertError.code ?? "unknown"}): ${insertError.message}`,
+    );
+    return NextResponse.json(
+      { code: "REQUEST_NOT_SAVED", error: "We couldn’t save your request. Please try again." },
+      { status: 502 },
+    );
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   const adminEmail = process.env.ADMIN_EMAIL;
   const fromEmail = process.env.RESEND_FROM_EMAIL;
@@ -48,20 +94,17 @@ export async function POST(request: Request) {
   if (!apiKey || !adminEmail || !fromEmail) {
     console.error("Apartment request email is not configured. Set RESEND_API_KEY, ADMIN_EMAIL, and RESEND_FROM_EMAIL.");
     return NextResponse.json(
-      {
-        code: "EMAIL_NOT_CONFIGURED",
-        error: "Request submission is not configured. Please contact the site administrator.",
-      },
-      { status: 503 },
+      { ok: true, emailSent: false, code: "EMAIL_NOT_CONFIGURED" },
+      { status: 202 },
     );
   }
 
   const message = [
     "New apartment search request",
     "",
-    `Name: ${name.trim()}`,
-    `Email: ${email.trim()}`,
-    `Phone: ${phone.trim()}`,
+    `Name: ${normalizedRequest.name}`,
+    `Email: ${normalizedRequest.email}`,
+    `Phone: ${normalizedRequest.phone}`,
     `Preferred city: ${city}`,
     `ZIP code: ${zip}`,
     `Monthly budget: ${budget}`,
@@ -69,28 +112,37 @@ export async function POST(request: Request) {
     `Desired move-in date: ${moveIn}`,
   ].join("\n");
 
-  const emailResponse = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + apiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: fromEmail,
-      to: [adminEmail],
-      reply_to: email.trim(),
-      subject: `Apartment search request: ${name.trim()}`,
-      text: message,
-    }),
-  });
+  let emailResponse: Response;
+  try {
+    emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: fromEmail,
+        to: [adminEmail],
+        reply_to: normalizedRequest.email,
+        subject: `Apartment search request: ${normalizedRequest.name}`,
+        text: message,
+      }),
+    });
+  } catch (error) {
+    console.error("Could not deliver apartment request notification:", error);
+    return NextResponse.json(
+      { ok: true, emailSent: false, code: "EMAIL_FAILED" },
+      { status: 202 },
+    );
+  }
 
   if (!emailResponse.ok) {
     console.error(`Resend failed to deliver apartment request (HTTP ${emailResponse.status}).`);
     return NextResponse.json(
-      { error: "We couldn’t send your request right now. Please try again." },
-      { status: 502 },
+      { ok: true, emailSent: false, code: "EMAIL_FAILED" },
+      { status: 202 },
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, emailSent: true });
 }

@@ -42,21 +42,34 @@ export default function RequestForm() {
         body: JSON.stringify(request),
       });
 
-      if (response.ok) {
+      const result: unknown = await response.json().catch(() => null);
+      const responseBody = result && typeof result === "object" ? result : null;
+      const code =
+        responseBody && "code" in responseBody && typeof responseBody.code === "string"
+          ? responseBody.code
+          : undefined;
+
+      if (!response.ok) {
+        setError(
+          responseBody && "error" in responseBody && typeof responseBody.error === "string"
+            ? responseBody.error
+            : "We couldn’t save your request. Please try again.",
+        );
+        return;
+      }
+
+      if (code === "EMAIL_NOT_CONFIGURED") {
+        search.set("requestStatus", "saved-email-not-configured");
+      } else if (code === "EMAIL_FAILED") {
+        search.set("requestStatus", "saved-email-failed");
+      } else if (responseBody && "emailSent" in responseBody && responseBody.emailSent === true) {
         search.set("requestStatus", "sent");
       } else {
-        const result: unknown = await response.json().catch(() => null);
-        const code =
-          result && typeof result === "object" && "code" in result
-            ? result.code
-            : undefined;
-        search.set(
-          "requestStatus",
-          code === "EMAIL_NOT_CONFIGURED" ? "email-not-configured" : "not-sent",
-        );
+        search.set("requestStatus", "saved-email-failed");
       }
     } catch {
-      search.set("requestStatus", "not-sent");
+      setError("We couldn’t submit your request. Please check your connection and try again.");
+      return;
     } finally {
       setIsSubmitting(false);
     }

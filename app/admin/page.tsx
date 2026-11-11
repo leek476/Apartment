@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Star } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
+import type { ApartmentRequestRow } from "@/lib/database.types";
 
 type Row = {
   id: string;
@@ -55,6 +56,8 @@ export default function AdminPage() {
   const [ratingDrafts, setRatingDrafts] = useState<Record<string, number>>({});
   const [ratingColumnAvailable, setRatingColumnAvailable] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);
+  const [requests, setRequests] = useState<ApartmentRequestRow[]>([]);
+  const [requestError, setRequestError] = useState("");
 
   const loadRows = useCallback(async () => {
     const client = getSupabaseClient();
@@ -83,6 +86,23 @@ export default function AdminPage() {
     }
     setRatingColumnAvailable(true);
     setRows(data ?? []);
+  }, []);
+
+  const loadRequests = useCallback(async () => {
+    const client = getSupabaseClient();
+    if (!client) {
+      throw new Error("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+    }
+
+    const { data, error } = await client
+      .from("apartment_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw new Error(`Could not load apartment requests: ${error.message}`);
+    }
+    setRequests(data ?? []);
   }, []);
 
   useEffect(() => {
@@ -137,7 +157,10 @@ export default function AdminPage() {
       setMessage(error instanceof Error ? error.message : "Could not load published listings.");
       setMessageType("error");
     });
-  }, [session, loadRows]);
+    loadRequests().catch((error: unknown) => {
+      setRequestError(error instanceof Error ? error.message : "Could not load apartment requests.");
+    });
+  }, [session, loadRows, loadRequests]);
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -494,7 +517,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-[#f5f7f5] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-4xl">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Manage listings</h1>
+          <h1 className="text-2xl font-bold text-gray-900">RentBridge admin</h1>
           <button
             onClick={handleSignOut}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-white"
@@ -718,6 +741,50 @@ notify pgrst, 'reload schema';`}
             )}
           </div>
         </form>
+
+        <section className="mt-10">
+          <h2 className="text-lg font-bold text-gray-900">
+            Apartment search requests ({requests.length})
+          </h2>
+          {requestError ? (
+            <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+              {requestError}
+            </p>
+          ) : (
+            <ul className="mt-3 divide-y divide-gray-200 rounded-xl bg-white shadow-sm">
+              {requests.length === 0 && (
+                <li className="p-4 text-sm text-gray-600">No apartment requests yet.</li>
+              )}
+              {requests.map((request) => (
+                <li key={request.id} className="space-y-2 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">{request.name}</p>
+                      <p className="text-xs text-gray-500">
+                        Submitted {new Date(request.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-3 text-sm font-semibold text-[#1e5a3a]">
+                      <a className="hover:underline" href={`mailto:${request.email}`}>
+                        Email
+                      </a>
+                      <a className="hover:underline" href={`tel:${request.phone}`}>
+                        Call
+                      </a>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700">
+                    {request.email} · {request.phone}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {request.city} {request.zip} · {request.bedrooms} · {request.budget}/mo ·
+                    {" "}Move-in {request.move_in}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         <h2 className="mt-10 text-lg font-bold text-gray-900">
           Published listings ({rows.length})

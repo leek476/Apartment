@@ -107,7 +107,9 @@ export default async function MatchesPage({
   const moveIn = param(params, "moveIn");
   const requestStatus = param(params, "requestStatus");
   const requestWasSent = requestStatus === "sent";
-  const emailNotConfigured = requestStatus === "email-not-configured";
+  const emailNotificationFailed =
+    requestStatus === "saved-email-not-configured" ||
+    requestStatus === "saved-email-failed";
   const cameFromForm = Boolean(zip && moveIn);
   const supabaseConfigured = isSupabaseConfigured();
 
@@ -168,11 +170,10 @@ export default async function MatchesPage({
           <p role="status" className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
             Thanks! Your request was sent to our agent. They&apos;ll follow up about your preferences.
           </p>
-        ) : emailNotConfigured ? (
+        ) : emailNotificationFailed ? (
           <p role="alert" className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            Your apartment preferences are shown below, but the request email could not be sent.
-            The site administrator needs to configure RESEND_API_KEY, ADMIN_EMAIL, and
-            RESEND_FROM_EMAIL.
+            Your request was saved for our admin team, but the email notification could not be
+            sent. The team can still follow up using the contact details you provided.
           </p>
         ) : cameFromForm ? (
           <p role="status" className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">

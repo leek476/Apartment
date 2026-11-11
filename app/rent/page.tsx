@@ -1,20 +1,42 @@
 import Link from "next/link";
 import ApartmentRating from "@/components/ApartmentRating";
 import ListingSetupNotice from "@/components/ListingSetupNotice";
+import SearchBar from "@/components/SearchBar";
 import { getListings, isSupabaseConfigured } from "@/lib/listings";
 
 export const dynamic = "force-dynamic";
 
-export default async function RentPage() {
-  const listings = await getListings();
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function one(value: string | string[] | undefined): string {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value[0] ?? "";
+  return "";
+}
+
+export default async function RentPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const params = await searchParams;
+  const query = one(params.q).trim();
+  const allListings = await getListings();
+  const normalizedQuery = query.toLocaleLowerCase();
+  const listings = normalizedQuery
+    ? allListings.filter((listing) =>
+        [listing.title, listing.address, listing.city, listing.zip]
+          .some((value) => value.toLocaleLowerCase().includes(normalizedQuery)),
+      )
+    : allListings;
   const supabaseConfigured = isSupabaseConfigured();
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-12">
-      <div className="mb-8 flex items-center justify-between">
+    <main className="mx-auto min-h-screen max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 sm:mb-8">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-teal-700">Available rentals</p>
-          <h1 className="mt-2 text-3xl font-bold text-gray-900">Explore apartments</h1>
+          <h1 className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl">Explore apartments</h1>
         </div>
         <Link href="/" className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:border-teal-700 hover:text-teal-700">
           Back home
@@ -23,7 +45,17 @@ export default async function RentPage() {
 
       {!supabaseConfigured && <ListingSetupNotice />}
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mb-6">
+        <SearchBar initialQuery={query} />
+      </div>
+
+      {query && (
+        <p className="mb-4 text-sm text-gray-600" role="status">
+          {listings.length} {listings.length === 1 ? "apartment" : "apartments"} matching “{query}”
+        </p>
+      )}
+
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {listings.map((listing) => (
           <Link
             key={listing.id}
@@ -66,9 +98,13 @@ export default async function RentPage() {
       </div>
       {listings.length === 0 && supabaseConfigured && (
         <section className="mt-8 rounded-xl border border-gray-200 bg-white p-8 text-center">
-          <h2 className="text-lg font-bold text-gray-900">No apartments have been published yet</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            {query ? "No apartments match your search" : "No apartments have been published yet"}
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Check back soon. New apartments will appear here after an admin publishes them.
+            {query
+              ? "Try a different city, street address, or ZIP code."
+              : "Check back soon. New apartments will appear here after an admin publishes them."}
           </p>
         </section>
       )}

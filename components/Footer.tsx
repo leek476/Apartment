@@ -3,13 +3,12 @@ import Logo from "./Logo";
 
 const links = [
   { label: "Home", href: "/" },
-  { label: "Find an Apartment", href: "/dashboard" },
+  { label: "Find an Apartment", href: "/rent" },
   { label: "How It Works", href: "/#how" },
   { label: "About Us", href: "/about" },
   { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
 ];
-const socials = ["f", "ig", "in"];
 
 export default function Footer() {
   return (
@@ -23,14 +22,6 @@ export default function Footer() {
             </li>
           ))}
         </ul>
-        <div className="flex items-center gap-3 text-xs">
-          <span>Follow Us</span>
-          {socials.map((s) => (
-            <a key={s} href="#" aria-label={s} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-xs font-bold hover:bg-white/25">
-              {s}
-            </a>
-          ))}
-        </div>
       </div>
       <div className="mx-auto mt-6 flex max-w-7xl flex-col items-center justify-between gap-2 border-t border-white/20 pt-4 text-[11px] text-white/80 sm:flex-row">
         <p>© {new Date().getFullYear()} RentBridge. All rights reserved.</p>

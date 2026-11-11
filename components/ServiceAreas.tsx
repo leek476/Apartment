@@ -3,24 +3,12 @@ import Handwritten from "./Handwritten";
 
 const areas = [
   {
-    state: "Northeast",
-    cities: ["New York, NY", "Boston, MA", "Philadelphia, PA", "Pittsburgh, PA", "Baltimore, MD"],
+    state: "Oklahoma",
+    cities: ["Oklahoma City", "Tulsa", "Norman", "Edmond", "Lawton"],
   },
   {
-    state: "South",
-    cities: ["Atlanta, GA", "Charlotte, NC", "Nashville, TN", "Miami, FL", "New Orleans, LA"],
-  },
-  {
-    state: "Midwest",
-    cities: ["Chicago, IL", "Detroit, MI", "Minneapolis, MN", "Columbus, OH", "Indianapolis, IN"],
-  },
-  {
-    state: "Southwest",
-    cities: ["Phoenix, AZ", "Dallas, TX", "Houston, TX", "Austin, TX", "Las Vegas, NV"],
-  },
-  {
-    state: "West",
-    cities: ["Los Angeles, CA", "San Diego, CA", "Denver, CO", "Seattle, WA", "Portland, OR"],
+    state: "Texas",
+    cities: ["Dallas", "Houston", "Austin", "San Antonio", "Fort Worth"],
   },
 ];
 
@@ -28,9 +16,9 @@ export default function ServiceAreas() {
   return (
     <section id="about" className="grid bg-[#f1f7f1] lg:grid-cols-[1.2fr_1fr]">
       <div className="px-6 py-12 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]">
-        <h2 className="text-3xl font-bold text-[#1e5a3a]">Apartment Searches Across the U.S.</h2>
+        <h2 className="text-2xl font-bold text-[#1e5a3a] sm:text-3xl">Apartment searches in Oklahoma and Texas</h2>
         <p className="mt-1 text-sm text-gray-700">
-          Explore popular destinations from coast to coast. Apartment availability varies by location.
+          Tell us which of these cities you have in mind and our team can help with your search.
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {areas.map((a) => (
