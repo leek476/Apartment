@@ -172,8 +172,7 @@ export default async function MatchesPage({
           </p>
         ) : emailNotificationFailed ? (
           <p role="alert" className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            Your request was saved for our admin team, but the email notification could not be
-            sent. The team can still follow up using the contact details you provided.
+            We are working on your request. We will reach out to you shortly.
           </p>
         ) : cameFromForm ? (
           <p role="status" className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
