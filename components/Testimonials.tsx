@@ -3,9 +3,9 @@ import Handwritten from "./Handwritten";
 import Faq from "./Faq";
 
 const reviews = [
-  { text: "I was overwhelmed looking for an apartment, but RentBridge made it so easy. I got great options and found my new home in just a few days!", name: "Jasmine T.", place: "Dallas, TX" },
+  { text: "I was overwhelmed looking for an apartment, but Rentlattice made it so easy. I got great options and found my new home in just a few days!", name: "Jasmine T.", place: "Dallas, TX" },
   { text: "The process was simple and professional. I really appreciate their responsiveness and helpful team.", name: "Marcus L.", place: "Oklahoma City, OK" },
-  { text: "RentBridge saved me so much time. They connected me with amazing landlords and I'm now in the perfect apartment!", name: "Tasha R.", place: "Houston, TX" },
+  { text: "Rentlattice saved me so much time. They connected me with amazing landlords and I'm now in the perfect apartment!", name: "Tasha R.", place: "Houston, TX" },
 ];
 
 export default function Testimonials() {

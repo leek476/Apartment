@@ -55,23 +55,27 @@ drop policy if exists "RentBridge visitors can submit apartment requests" on pub
 drop policy if exists "RentBridge admins can read apartment requests" on public.apartment_requests;
 drop policy if exists "RentBridge admins can delete apartment requests" on public.apartment_requests;
 drop policy if exists "RentBridge only admins can delete apartment requests" on public.apartment_requests;
+drop policy if exists "Rentlattice visitors can submit apartment requests" on public.apartment_requests;
+drop policy if exists "Rentlattice admins can read apartment requests" on public.apartment_requests;
+drop policy if exists "Rentlattice admins can delete apartment requests" on public.apartment_requests;
+drop policy if exists "Rentlattice only admins can delete apartment requests" on public.apartment_requests;
 
-create policy "RentBridge visitors can submit apartment requests"
+create policy "Rentlattice visitors can submit apartment requests"
   on public.apartment_requests for insert
   to anon, authenticated
   with check (true);
 
-create policy "RentBridge admins can read apartment requests"
+create policy "Rentlattice admins can read apartment requests"
   on public.apartment_requests for select
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
-create policy "RentBridge admins can delete apartment requests"
+create policy "Rentlattice admins can delete apartment requests"
   on public.apartment_requests for delete
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
-create policy "RentBridge only admins can delete apartment requests"
+create policy "Rentlattice only admins can delete apartment requests"
   on public.apartment_requests as restrictive for delete
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
@@ -86,30 +90,35 @@ drop policy if exists "RentBridge admins can manage listings" on public.listings
 drop policy if exists "RentBridge only admins can insert listings" on public.listings;
 drop policy if exists "RentBridge only admins can update listings" on public.listings;
 drop policy if exists "RentBridge only admins can delete listings" on public.listings;
+drop policy if exists "Rentlattice public can read listings" on public.listings;
+drop policy if exists "Rentlattice admins can manage listings" on public.listings;
+drop policy if exists "Rentlattice only admins can insert listings" on public.listings;
+drop policy if exists "Rentlattice only admins can update listings" on public.listings;
+drop policy if exists "Rentlattice only admins can delete listings" on public.listings;
 
-create policy "RentBridge public can read listings"
+create policy "Rentlattice public can read listings"
   on public.listings for select
   to anon, authenticated
   using (true);
 
-create policy "RentBridge admins can manage listings"
+create policy "Rentlattice admins can manage listings"
   on public.listings for all
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
-create policy "RentBridge only admins can insert listings"
+create policy "Rentlattice only admins can insert listings"
   on public.listings as restrictive for insert
   to authenticated
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
-create policy "RentBridge only admins can update listings"
+create policy "Rentlattice only admins can update listings"
   on public.listings as restrictive for update
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
-create policy "RentBridge only admins can delete listings"
+create policy "Rentlattice only admins can delete listings"
   on public.listings as restrictive for delete
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
@@ -134,13 +143,20 @@ drop policy if exists "RentBridge admins can delete listing images" on storage.o
 drop policy if exists "RentBridge only admins can insert listing images" on storage.objects;
 drop policy if exists "RentBridge only admins can update listing images" on storage.objects;
 drop policy if exists "RentBridge only admins can delete listing images" on storage.objects;
+drop policy if exists "Rentlattice public can read listing images" on storage.objects;
+drop policy if exists "Rentlattice admins can upload listing images" on storage.objects;
+drop policy if exists "Rentlattice admins can update listing images" on storage.objects;
+drop policy if exists "Rentlattice admins can delete listing images" on storage.objects;
+drop policy if exists "Rentlattice only admins can insert listing images" on storage.objects;
+drop policy if exists "Rentlattice only admins can update listing images" on storage.objects;
+drop policy if exists "Rentlattice only admins can delete listing images" on storage.objects;
 
-create policy "RentBridge public can read listing images"
+create policy "Rentlattice public can read listing images"
   on storage.objects for select
   to anon, authenticated
   using (bucket_id = 'listing-images');
 
-create policy "RentBridge admins can upload listing images"
+create policy "Rentlattice admins can upload listing images"
   on storage.objects for insert
   to authenticated
   with check (
@@ -148,7 +164,7 @@ create policy "RentBridge admins can upload listing images"
     and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
-create policy "RentBridge admins can update listing images"
+create policy "Rentlattice admins can update listing images"
   on storage.objects for update
   to authenticated
   using (
@@ -160,7 +176,7 @@ create policy "RentBridge admins can update listing images"
     and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
-create policy "RentBridge admins can delete listing images"
+create policy "Rentlattice admins can delete listing images"
   on storage.objects for delete
   to authenticated
   using (
@@ -168,7 +184,7 @@ create policy "RentBridge admins can delete listing images"
     and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
-create policy "RentBridge only admins can insert listing images"
+create policy "Rentlattice only admins can insert listing images"
   on storage.objects as restrictive for insert
   to authenticated
   with check (
@@ -176,7 +192,7 @@ create policy "RentBridge only admins can insert listing images"
     and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
-create policy "RentBridge only admins can update listing images"
+create policy "Rentlattice only admins can update listing images"
   on storage.objects as restrictive for update
   to authenticated
   using (
@@ -188,7 +204,7 @@ create policy "RentBridge only admins can update listing images"
     and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
-create policy "RentBridge only admins can delete listing images"
+create policy "Rentlattice only admins can delete listing images"
   on storage.objects as restrictive for delete
   to authenticated
   using (

@@ -69,7 +69,7 @@ export default async function ListingDetailsPage({
             </dl>
             {listing.adminRating > 0 && (
               <section className="mt-6 border-t border-gray-100 pt-5">
-                <h2 className="text-sm font-semibold text-gray-900">RentBridge rating</h2>
+                <h2 className="text-sm font-semibold text-gray-900">Rentlattice rating</h2>
                 <div className="mt-2">
                   <ApartmentRating rating={listing.adminRating} size={20} />
                 </div>

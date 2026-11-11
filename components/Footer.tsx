@@ -24,7 +24,7 @@ export default function Footer() {
         </ul>
       </div>
       <div className="mx-auto mt-6 flex max-w-7xl flex-col items-center justify-between gap-2 border-t border-white/20 pt-4 text-[11px] text-white/80 sm:flex-row">
-        <p>© {new Date().getFullYear()} RentBridge. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Rentlattice. All rights reserved.</p>
         <p className="flex gap-2">
           <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
           <span aria-hidden>|</span>

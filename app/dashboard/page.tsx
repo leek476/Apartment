@@ -41,7 +41,7 @@ export default async function DashboardPage({
     <main className="min-h-screen bg-[#f5f7f5] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <Link href="/" className="text-sm font-semibold text-[#1e5a3a] hover:underline">
-          ← RentBridge home
+          ← Rentlattice home
         </Link>
 
         <h1 className="mt-6 text-3xl font-bold text-gray-900">Available apartments</h1>

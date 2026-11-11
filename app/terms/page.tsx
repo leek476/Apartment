@@ -3,8 +3,8 @@ import InformationalPage from "@/components/InformationalPage";
 
 const sections = [
   {
-    title: "Using RentBridge",
-    text: "You may use RentBridge to browse apartment information and submit a request for help finding rental opportunities. Provide accurate information and use the site only for lawful purposes.",
+    title: "Using Rentlattice",
+    text: "You may use Rentlattice to browse apartment information and submit a request for help finding rental opportunities. Provide accurate information and use the site only for lawful purposes.",
   },
   {
     title: "Listings and availability",
@@ -28,7 +28,7 @@ export default function TermsPage() {
   return (
     <InformationalPage
       title="Terms of service"
-      intro="These terms describe the basic conditions for using RentBridge and its apartment search features."
+      intro="These terms describe the basic conditions for using Rentlattice and its apartment search features."
     >
       <p className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
         This is a general draft, not legal advice. Have it reviewed and adapted to your business,

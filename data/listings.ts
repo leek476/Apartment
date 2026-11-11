@@ -26,7 +26,7 @@ function listing(
   sqft: number,
   petFriendly: boolean,
 ): Listing {
-  const image = `https://picsum.photos/seed/rentbridge${id}/800/600`;
+  const image = `https://picsum.photos/seed/rentlattice${id}/800/600`;
   return {
     id,
     title,

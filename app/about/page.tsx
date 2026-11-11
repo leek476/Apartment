@@ -13,7 +13,7 @@ const values = [
     icon: Users,
     title: "Local focus",
     description:
-      "RentBridge currently focuses on connecting renters with opportunities in Oklahoma and Texas.",
+      "Rentlattice currently focuses on connecting renters with opportunities in Oklahoma and Texas.",
   },
   {
     icon: BadgeCheck,
@@ -27,12 +27,12 @@ export default function AboutPage() {
   return (
     <InformationalPage
       title="About us"
-      intro="RentBridge helps make the apartment search feel more manageable by bringing your preferences and rental opportunities together."
+      intro="Rentlattice helps make the apartment search feel more manageable by bringing your preferences and rental opportunities together."
     >
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
         <h2 className="text-2xl font-bold text-gray-900">A bridge to your next home</h2>
         <p className="mt-3 leading-relaxed text-gray-600">
-          Finding a place to live can take time. RentBridge gives renters a straightforward way to
+          Finding a place to live can take time. Rentlattice gives renters a straightforward way to
           share what they are looking for and explore available apartments. Our service is designed
           to help you discover options; you should always confirm availability, fees, lease terms,
           and property details directly with the property manager or landlord.

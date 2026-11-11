@@ -508,7 +508,7 @@ export default function AdminPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f5f7f5] px-4">
         <form onSubmit={handleLogin} className="w-full max-w-sm rounded-xl bg-white p-6 shadow">
-          <h1 className="text-xl font-bold text-gray-900">RentBridge admin</h1>
+          <h1 className="text-xl font-bold text-gray-900">Rentlattice admin</h1>
           <p className="mb-4 text-sm text-gray-600">Sign in to manage listings.</p>
 
           <label htmlFor="admin-email" className={label}>Email</label>
@@ -549,7 +549,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-[#f5f7f5] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-4xl">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">RentBridge admin</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Rentlattice admin</h1>
           <button
             onClick={handleSignOut}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-white"

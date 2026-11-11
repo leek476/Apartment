@@ -4,7 +4,7 @@ import RequestForm from "@/components/RequestForm";
 export default function ContactPage() {
   return (
     <InformationalPage
-      title="Contact RentBridge"
+      title="Contact Rentlattice"
       intro="Tell us what kind of apartment you are looking for. Share your preferences and our team can follow up about rental opportunities."
     >
       <div className="mx-auto max-w-3xl">

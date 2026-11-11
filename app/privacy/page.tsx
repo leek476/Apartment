@@ -16,7 +16,7 @@ const sections = [
   },
   {
     title: "Choices and questions",
-    text: "You can choose not to submit a request. For questions about information you have sent us or to request its removal, contact RentBridge using the Contact page. We may need to retain information where required for legitimate operational or legal reasons.",
+    text: "You can choose not to submit a request. For questions about information you have sent us or to request its removal, contact Rentlattice using the Contact page. We may need to retain information where required for legitimate operational or legal reasons.",
   },
   {
     title: "Updates",
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
   return (
     <InformationalPage
       title="Privacy policy"
-      intro="This draft explains what information RentBridge receives through apartment search requests and how it is used."
+      intro="This draft explains what information Rentlattice receives through apartment search requests and how it is used."
     >
       <p className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
         Before publishing, review this draft against your actual data practices and applicable

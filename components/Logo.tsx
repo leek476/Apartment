@@ -12,7 +12,7 @@ export default function Logo({ light = false }: { light?: boolean }) {
         <path d="M2 44 Q26 36 50 44" stroke="#67d36e" strokeWidth="3" strokeLinecap="round" fill="none" />
       </svg>
       <div className="leading-tight">
-        <p className={`text-2xl font-bold ${light ? "text-white" : "text-[#1e5a3a]"}`}>RentBridge</p>
+        <p className={`text-2xl font-bold ${light ? "text-white" : "text-[#1e5a3a]"}`}>Rentlattice</p>
         <p className={`text-[10px] ${light ? "text-white/80" : "text-gray-600"}`}>Your Next Home Awaits</p>
       </div>
     </div>

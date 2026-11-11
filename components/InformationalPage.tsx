@@ -18,7 +18,7 @@ export default function InformationalPage({
         <div className="mx-auto max-w-4xl">
           <header className="mb-8">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1e5a3a]">
-              RentBridge
+              Rentlattice
             </p>
             <h1 className="mt-2 text-4xl font-bold text-gray-900">{title}</h1>
             <p className="mt-3 max-w-3xl text-lg leading-relaxed text-gray-600">{intro}</p>

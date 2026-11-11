@@ -13,7 +13,7 @@ export default function ApartmentRating({
     <div
       className="flex items-center gap-1 text-amber-500"
       role="img"
-      aria-label={`RentBridge rating: ${rating} out of 5 stars`}
+      aria-label={`Rentlattice rating: ${rating} out of 5 stars`}
     >
       {Array.from({ length: 5 }, (_, index) => (
         <Star

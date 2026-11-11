@@ -148,7 +148,7 @@ export default async function MatchesPage({
     <main className="min-h-screen bg-[#f5f7f5] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <Link href="/" className="text-sm font-semibold text-[#1e5a3a] hover:underline">
-          ← RentBridge home
+          ← Rentlattice home
         </Link>
 
         <header className="mt-6">
